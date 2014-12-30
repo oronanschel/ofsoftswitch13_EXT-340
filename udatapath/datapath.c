@@ -73,8 +73,8 @@ struct bundle_time_ctl bundle_time_ctl ={
 		.discard = 0,
 		{
 				.type = 0,
-				{0,1000000}, //sched_accuracy  -1 [sec] //to be updated on statistics
-				{1,0},  //sched_max_future 1[sec]
+				{0,1000000}, //sched_accuracy  -0.001[sec]
+				{10,0},  //sched_max_future 10[sec]
  				{1,0},  //sched_max_past   1[sec]
  				{0,0},  //timestamp
 		},
@@ -240,11 +240,13 @@ dp_run(struct datapath *dp) {
 
     //TIME_EXTENTION_EXP
     gettimeofday(&time_check, 0);
+    time_check.tv_sec += bundle_time_offset;//ORON
     if((bundle_time_ctl.ctl.flags!=0) & (!bundle_time_ctl.discard) ){
     	sched_sec  = bundle_time_ctl.sched_time.seconds;
         sched_nsec = bundle_time_ctl.sched_time.nanoseconds;
 
     	if((time_check.tv_sec >sched_sec) || ((time_check.tv_sec == sched_sec) && ((time_check.tv_usec*1000) >= sched_nsec))){
+    			printf("Commit timeoffset %lu\n",bundle_time_offset);
     			printf("Commit Bundle in time sched :%lu.%09u\n",sched_sec,sched_nsec);
 				printf("Commit Bundle in time actual:%u.%09u\n",time_check.tv_sec,time_check.tv_usec*1000);
 	    		bundle_time_ctl.commiting_now=1;

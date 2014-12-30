@@ -58,6 +58,8 @@
 /****************************************************************************
  * Bundle Commit in time module
  ****************************************************************************/
+uint32_t bundle_time_offset; //ORON
+
 struct bundle_time_ctl {
 	int    discard;
     struct ofl_bundle_features_prop_time features;

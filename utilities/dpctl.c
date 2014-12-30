@@ -108,6 +108,7 @@ static uint32_t bundle_max_future_sec = 0;
 static uint32_t bundle_max_past_sec = 0;
 static uint32_t bundle_max_future_nano = 0;
 static uint32_t bundle_max_past_nano = 0;
+static uint32_t bundle_time_offset =0; //ORON
 //TIME_EXTENTION_EXP(close)
 static uint8_t mask_all[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
@@ -984,9 +985,9 @@ bundle_control(struct vconn *vconn, int argc UNUSED, char *argv[] UNUSED) {
             prop_time->type    = OFPBPT_TIME;
             prop_time->length  = sizeof(struct ofp_bundle_prop_time);//TODO TIME_EXTENTION_EXP ask TAL
             prop_time->scheduled_time.nanoseconds=bundle_time_nsec;
-            prop_time->scheduled_time.seconds    =bundle_time_sec;
+            prop_time->scheduled_time.seconds    =bundle_time_sec + bundle_time_offset; //ORON
 
-            req.properties = &prop_time;
+            req.properties = prop_time;
             printf("Dcptl send bundle commit in time = %u.%u, flag = %u (make sure if T>0 then f=4)\n",bundle_time_sec,bundle_time_nsec,bundle_flags);//TIME_EXTENTION_EXP
             req.bundle_id = bundle_id;
             req.flags = bundle_flags;
@@ -1048,7 +1049,7 @@ bundle_feature_req(struct vconn *vconn, int argc UNUSED, char *argv[] UNUSED) {
 
 	if ((bundle_flags & OFPBF_TIMESTAMP)>0){
 		gettimeofday(&time_check, 0);
-		req.features.timestamp.seconds            = time_check.tv_sec;
+		req.features.timestamp.seconds            = time_check.tv_sec + bundle_time_offset; //ORON
 		req.features.timestamp.nanoseconds        = time_check.tv_usec*1000;
 	}
 	else{
@@ -1170,6 +1171,7 @@ parse_options(int argc, char *argv[])
         {"bundle_time_feature2" ,required_argument ,0,'p'},//TIME_EXTENTION_EXP
         {"bundle_time_feature3" ,required_argument ,0,'S'},//TIME_EXTENTION_EXP
         {"bundle_time_feature4" ,required_argument ,0,'s'},//TIME_EXTENTION_EXP
+        {"bundle_time_offset" ,required_argument ,0,'O'},//TIME_EXTENTION_EXP
         {"flags", required_argument, 0, 'f'},
         {"verbose", optional_argument, 0, 'v'},
         {"strict", no_argument, 0, OPT_STRICT},
@@ -1223,6 +1225,9 @@ parse_options(int argc, char *argv[])
         case 'N':
         	bundle_time_nsec = strtoul(optarg, NULL, 10);
         	break;
+        case 'O':
+		    bundle_time_offset = strtoul(optarg, NULL, 10);
+			break;
         	//TIME_EXTENTION_EXP(close)
         case 'f':
             bundle_flags = strtoul(optarg, NULL, 10);

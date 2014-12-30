@@ -68,6 +68,8 @@
 #define THIS_MODULE VLM_udatapath
 #include "vlog.h"
 
+extern uint32_t bundle_time_offset; //ORON
+
 int udatapath_cmd(int argc, char *argv[]);
 
 static void parse_options(struct datapath *dp, int argc, char *argv[]);
@@ -230,6 +232,7 @@ parse_options(struct datapath *dp, int argc, char *argv[])
         {"sw-desc",     required_argument, 0, OPT_SW_DESC},
         {"dp_desc",  required_argument, 0, OPT_DP_DESC},
         {"serial_num",  required_argument, 0, OPT_SERIAL_NUM},
+        {"bundle_time_offset",  required_argument, 0, 'O'}, //ORON
         DAEMON_LONG_OPTIONS,
 #ifdef HAVE_OPENSSL
         VCONN_SSL_LONG_OPTIONS
@@ -281,7 +284,11 @@ parse_options(struct datapath *dp, int argc, char *argv[])
         case 'v':
             vlog_set_verbosity(optarg);
             break;
-
+        //ORON(open)
+        case 'O':
+        	bundle_time_offset = strtol(optarg, NULL, 10);
+            break;
+        //ORON(close
         case 'i':
             if (!port_list) {
                 port_list = optarg;
